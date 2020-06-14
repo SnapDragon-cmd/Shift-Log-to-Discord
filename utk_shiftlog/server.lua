@@ -45,6 +45,16 @@ AddEventHandler("utk_sl:jobchanged", function(old, new, method)
     local xPlayer = ESX.GetPlayerFromId(source)
     local header = nil
     local color = nil
+        
+    local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
+        ['@identifier'] = xPlayer.identifier
+    })
+    local firstname = result[1].firstname
+    local lastname  = result[1].lastname
+    local data = {
+        firstname = firstname,
+        lastname  = lastname,
+    }
 
     if old == "police" then
         header = "Police Shift" -- Header
@@ -70,7 +80,7 @@ AddEventHandler("utk_sl:jobchanged", function(old, new, method)
                 elseif duration >= 3600 then
                     timetext = tostring(math.floor(duration / 3600).." hours, "..tostring(math.floor(math.fmod(duration, 3600)) / 60)).." minutes"
                 end
-                DiscordLog(header , "Steam Name: **"..timers[old][i].name.."**\nIdentifier: **"..timers[old][i].identifier.."**\n Shift duration: **__"..timetext.."__**\n Start date: **"..date.."**\n End date: **"..os.date("%d/%m/%Y %X").."**", color, old)
+                DiscordLog(header, "Steam Name: **"..timers[old][i].name.."**\nCharacter Name: **"..data.firstname..' '..data.lastname.."**\nSteam Hex ID: **"..timers[old][i].identifier.."**\nShift duration: **__"..timetext.."__**\nStart date: **"..date.."**\nEnd date: **"..os.date("%d/%m/%Y %X").."**\nJob-Grade: **"..xPlayer.job.label..' - '..xPlayer.job.grade_label.."**", color, old)
                 table.remove(timers[old], i)
                 break
             end
@@ -89,9 +99,20 @@ AddEventHandler("utk_sl:jobchanged", function(old, new, method)
 end)
 
 AddEventHandler("playerDropped", function(reason)
+    local xPlayer = ESX.GetPlayerFromId(source)
     local id = source
     local header = nil
     local color = nil
+        
+    local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
+        ['@identifier'] = xPlayer.identifier
+    })
+    local firstname = result[1].firstname
+    local lastname  = result[1].lastname
+    local data = {
+        firstname = firstname,
+        lastname  = lastname,
+    }
 
     for k, v in pairs(timers) do
         for n = 1, #timers[k], 1 do
@@ -114,7 +135,7 @@ AddEventHandler("playerDropped", function(reason)
                 elseif duration >= 3600 then
                     timetext = tostring(math.floor(duration / 3600).." hours, "..tostring(math.floor(math.fmod(duration, 3600)) / 60)).." minutes"
                 end
-                DiscordLog(header, "Steam Name: **"..timers[k][n].name.."**\nIdentifier: **"..timers[k][n].identifier.."**\n Shift duration: **__"..timetext.."__**\n Start date: **"..date.."**\n End date: **"..os.date("%d/%m/%Y %X").."**", color, k)
+                DiscordLog(header, "Steam Name: **"..timers[k][n].name.."**\nCharacter Name: **"..data.firstname..' '..data.lastname.."**\nSteam Hex ID: **"..timers[k][n].identifier.."**\nShift duration: **__"..timetext.."__**\nStart date: **"..date.."**\nEnd date: **"..os.date("%d/%m/%Y %X").."**\nJob-Grade: **"..xPlayer.job.label..' - '..xPlayer.job.grade_label.."**", color, k)
                 table.remove(timers[k], n)
                 return
             end
@@ -123,3 +144,4 @@ AddEventHandler("playerDropped", function(reason)
 end)
 
 DiscordLog("[utk_shiftlog]", "Shift logger started!", 3447003, "police")
+DiscordLog("[utk_shiftlog]", "Shift logger started!", 15158332, "ambulance")
